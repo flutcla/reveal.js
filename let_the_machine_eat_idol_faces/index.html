@@ -1,0 +1,632 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Let the Machine Eat Idol Faces</title>
+
+  <link rel="stylesheet" href="../dist/reset.css">
+  <link rel="stylesheet" href="../dist/reveal.css">
+  <link rel="stylesheet" href="../dist/theme/sky.css">
+  <link rel="stylesheet" href="../plugin/highlight/monokai.css">
+</head>
+
+<body>
+  <div class="reveal">
+    <section class="slides">
+      <section data-background-image="image/study_is_important.jpeg" data-background-size="1200px">
+        <h3 style="background-color:white; font-size:50px; padding:20px;">学生の本分は学業です。<br>浮ついて貴重な時間を無駄にする人は、<br>学費と人生を浪費しています。</h3>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <h3>自己紹介</h3>
+        </section>
+        <section data-auto-animate>
+          <h3>自己紹介</h3>
+          <table>
+            <tbody>
+              <tr><td align="right">名前</td><td>こーちゃん</td></tr>
+              <tr><td align="right">所属</td><td>数理計算科学系</td></tr>
+              <tr><td align="right">入学年度</td><td>2018年</td></tr>
+              <tr><td align="right">学年</td><td>学部4年</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <h3>突然ですが</h3>
+        </section>
+        <section data-auto-animate>
+          <h3>突然ですが</h3>
+          <p>アイドルの顔面って素敵ですよね</p>
+          <img src="image/01.jpg">
+        </section>
+      </section>
+
+      <section>
+        <h2>そこで</h2>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <h3>Let the Machine Eat Idol Faces</h3>
+        </section>
+        <section data-auto-animate>
+          <h3>Let the Machine Eat Idol Faces</h3>
+          <h2>アイドルの顔面を<br>機械に食わせよう</h2>
+        </section>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <h4>手法</h4>
+        </section>
+        <section data-auto-animate>
+          <h4>手法</h4>
+          <ul>
+            <li class="fragment fade-in">学習用の画像を用意する</li>
+            <li class="fragment fade-in">OpenCV に搭載されている顔検出用モデル lbpcascades を二次元画像用に調整したモデル lbpcascade_animeface を用いて顔部分を切り抜く</li>
+            <li class="fragment fade-in">Keras に搭載されているモデル Inception-V3 をアイドルの顔の識別用に転移学習する</li>
+          </ul>
+        </section>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <h2>つまり</h2>
+        </section>
+        <section data-auto-animate>
+          <h2>つまり</h2>
+          <h2>アイドルの顔を餌に</h2>
+        </section>
+        <section data-auto-animate>
+          <h2>つまり</h2>
+          <h2>アイドルの顔を餌に</h2>
+          <h1>機械学習</h1>
+        </section>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <h4>顔面の抽出例 その1</h4>
+          <p>[ｶﾞｰﾙ･ｿｰ･ｽｲｰﾄ]橘ありす+</p>
+          <img src="image/02.jpg">
+        </section>
+        <section data-auto-animate>
+          <h4>顔面の抽出例 その1</h4>
+          <p>[ｶﾞｰﾙ･ｿｰ･ｽｲｰﾄ]橘ありす+</p>
+          <img src="image/02.jpg">
+          <img src="image/02_face.png">
+        </section>
+        <section data-auto-animate>
+          <h2>かわいいね</h2>
+          <img src="image/02.jpg">
+          <img src="image/02_face.png">
+        </section>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <h4>顔面の抽出例 その2</h4>
+          <p>[ちいさな手のひら]佐城雪美+</p>
+          <img src="image/03.jpg">
+        </section>
+        <section data-auto-animate>
+          <h4>顔面の抽出例 その2</h4>
+          <p>[ちいさな手のひら]佐城雪美+</p>
+          <img src="image/03.jpg">
+          <img src="image/03_face.png">
+        </section>
+        <section data-auto-animate>
+          <h2>かわいいね</h2>
+          <img src="image/03.jpg">
+          <img src="image/03_face.png">
+        </section>
+      </section>
+
+      <section>
+        <h1>閑話休題</h1>
+      </section>
+
+      <section>
+        <section data-auto-animate><h3>データの下処理</h3></section>
+        <section data-auto-animate><h3>データの下処理</h3><pre><code data-trim data-noescape >
+          datagen = image.ImageDataGenerator(
+            rescale=1./255,
+            validation_split=0.1,
+            horizontal_flip=True,
+            width_shift_range=0.2,
+            height_shift_range=0.2,
+            shear_range=0.2,
+            fill_mode='nearest'
+          )
+        </code></pre></section>
+        <section data-auto-animate><h3>データの下処理</h3><pre><code data-trim data-noescape>
+          train_generator = datagen.flow_from_directory(
+            'data/train/face',
+            target_size=(256, 256),
+            class_mode='categorical',
+            batch_size=batch_size,
+            subset='training',
+            seed=seed,
+          )
+          </code></pre><pre><code data-trim data-noescape>
+          val_generator = datagen.flow_from_directory(
+            'data/train/face',
+            target_size=(256, 256),
+            class_mode='categorical',
+            batch_size=batch_size,
+            subset='validation',
+            seed=seed,
+          )
+        </code></pre></section>
+      </section>
+
+      <section>
+        <section data-auto-animate><h3>モデルの準備</h3></section>
+        <section data-auto-animate><h3>モデルの準備</h3><pre><code data-trim data-noescape>
+          from tensorflow.keras.applications.inception_v3 import InceptionV3
+          from tensorflow.keras.models import Model
+          from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+          base_model = InceptionV3(weights='imagenet',
+                                   include_top=False,
+                                   input_shape=(256, 256, 3))
+
+          # 特徴量から推定結果を求める全結合層を再定義する
+          x = base_model.output
+          x = GlobalAveragePooling2D()(x)
+          x = Dense(1024, activation='relu')(x)
+          predictions = Dense(len(set(train_generator.labels)), activation='softmax')(x)
+
+          model = Model(inputs=base_model.input, outputs=predictions)
+        </code></pre></section>
+        <section data-auto-animate><h3>モデルの準備</h3><pre><code data-trim data-noescape>
+          from tensorflow.keras.optimizers import SGD
+
+          # 全結合層以外の重みを固定
+          for layer in base_model.layers:
+          layer.trainable = False
+
+          model.compile(optimizer=SGD(learning_rate=0.001, momentum=0.9),
+                        loss='categorical_crossentropy',
+                        metrics=['accuracy'])
+          model.fit(train_generator,
+                    epochs=10,
+                    verbose=1,
+                    validation_data=val_generator)
+        </code></pre></section>
+
+        <section data-auto-animate>
+          <h3>モデルの準備</h3>
+          <h2>現在の精度 : 24%</h2>
+        </section>
+      </section>
+
+      <section>
+        <section data-auto-animate><h3>学習</h3></section>
+        <section data-auto-animate><h3>学習</h3><pre><code data-trim data-noescape>
+          for layer in model.layers[:249]: layer.trainable = False
+          for layer in model.layers[249:]: layer.trainable = True
+
+          model.compile(optimizer=SGD(learning_rate=0.001, momentum=0.9),
+                        loss='categorical_crossentropy',
+                        metrics=['accuracy'])
+
+          model.fit(train_generator,
+                    epochs=70,
+                    verbose=1,
+                    validation_data=val_generator,
+                    callbacks=[checkpoint])
+        </code></pre></section>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <h3>2時間後</h3>
+        </section>
+        <section data-auto-animate>
+          <h3>2時間後</h3>
+          <h2>精度 : 90%</h2>
+        </section>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <h3>結果1: 検証用データ</h3>
+        </section>
+        <section data-auto-animate>
+          <h3>結果1: 検証用データ</h3>
+          <img src="image/04_1.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <h3>結果1: 検証用データ</h3>
+          <img src="image/04_1.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/04_1.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 100% 0">
+        </section>
+        <section data-auto-animate>
+          <h3>結果1: 検証用データ</h3>
+          <img src="image/04_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <h3>結果1: 検証用データ</h3>
+          <img src="image/04_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/04_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+      <section><h1>いいですね</h1></section>
+      <section><h1>次</h1></section>
+
+      <section>
+        <section data-auto-animate>
+          <h3>結果2: 外部のデータ</h3>
+        </section>
+        <section data-auto-animate>
+          <p>[ありすの物語]橘ありす</p>
+          <img src="image/01.jpg">
+        </section>
+        <section data-auto-animate>
+          <p>[ありすの物語]橘ありす</p>
+          <img src="image/05_1.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <p>[ありすの物語]橘ありす</p>
+          <img src="image/05_1.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/05_1.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 100% 0">
+        </section>
+        <section data-auto-animate>
+          <p>映り込んだしゅがは</p>
+          <img src="image/05_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <p>映り込んだしゅがは</p>
+          <img src="image/05_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/05_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+      <section><h1>いいですね</h1></section>
+      <section><h1>次</h1></section>
+
+      <section>
+        <p>[アドマイヤ・ブライド]橘ありす＋</p>
+        <img src="image/05_3.jpg">
+      </section>
+
+      <section><h1>小学生に<br>花嫁衣装を<br>着せるな</h1></section>
+
+      <section>
+        <p>[アドマイヤ・ブライド]橘ありす＋</p>
+        <img src="image/05_3.jpg">
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <h1>結婚しました</h1>
+        </section>
+        <section data-auto-animate>
+          <h1>結婚しました</h1>
+          <h2>ご<b>成長</b></h2>
+          <h2>ありがとうございました</h2>
+        </section>
+        <section data-auto-animate>
+          <h1>結婚しました</h1>
+          <h2 class="fragment grow">ご<b>成長</b></h2>
+          <h2>ありがとうございました</h2>
+        </section>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <p>[アドマイヤ・ブライド]橘ありす＋</p>
+          <img src="image/05_3.jpg">
+        </section>
+        <section data-auto-animate>
+          <p>[アドマイヤ・ブライド]橘ありす＋</p>
+          <img src="image/05_4.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <p>[アドマイヤ・ブライド]橘ありす＋</p>
+          <img src="image/05_4.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/05_4.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+      <section><h1>いいですね</h1></section>
+      <section><h1>次</h1></section>
+
+      <section>
+        <p>[キトゥンズガーデン]佐城雪美</p>
+        <img src="image/05_5.jpg">
+      </section>
+
+      <section><h1>小学生に<br>えっちな<br>衣装を<br>着せるな</h1></section>
+
+      <section>
+        <p>[キトゥンズガーデン]佐城雪美</p>
+        <div class="r-stack">
+          <img src="image/05_5.jpg">
+          <img class="fragment" src="image/arrow.png" style="height: 100px; transform:rotate(-60deg); position: absolute; right: 100px; bottom: 140px;">
+        </div>
+      </section>
+
+      <section><h1>これ絶対<br>見えてる<br>よね</h1></section>
+
+      <section>
+        <section data-auto-animate>
+          <p>[キトゥンズガーデン]佐城雪美</p>
+          <img src="image/05_5.jpg">
+        </section>
+        <section data-auto-animate>
+          <p>[キトゥンズガーデン]佐城雪美</p>
+          <img src="image/05_6.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <p>[キトゥンズガーデン]佐城雪美</p>
+          <img src="image/05_6.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/05_6.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+      <section><h1>いいですね</h1></section>
+
+      <section>
+        <section data-auto-animate>
+          <p>映り込んだ千枝ちゃん</p>
+          <img src="image/05_5.jpg">
+        </section>
+        <section data-auto-animate>
+          <p>映り込んだ千枝ちゃん</p>
+          <img src="image/05_7.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <p>映り込んだ千枝ちゃん</p>
+          <img src="image/05_7.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/05_7.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+      <section><h1>いいですね</h1></section>
+
+      <section>
+        <section data-auto-animate>
+          <p>映り込んだ由愛ちゃん</p>
+          <img src="image/05_5.jpg">
+        </section>
+        <section data-auto-animate>
+          <p>映り込んだ由愛ちゃん</p>
+          <img src="image/05_8.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <p>映り込んだ由愛ちゃん</p>
+          <img src="image/05_8.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/05_8.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+      <section><h3>榊原里美......?</h3></section>
+
+      <section>
+        <section data-auto-animate>
+          <p>映り込んだ由愛ちゃん</p>
+          <img src="image/05_8.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/05_8.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+      <section><h1>榊原里美......?</h1></section>
+
+      <section>
+        <section data-auto-animate>
+          <p>[ほわあまプリンセス]榊原里美＋</p>
+          <img src="image/06_1.jpg">
+        </section>
+        <section data-auto-animate>
+          <p>[ほわあまプリンセス]榊原里美＋</p>
+          <img src="image/06_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <p>[ほわあまプリンセス]榊原里美＋</p>
+          <img src="image/06_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/05_8.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <p>[ほわあまプリンセス]榊原里美＋</p>
+          <img src="image/06_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/05_8.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <h2>なるほどね</h2>
+        </section>
+        <section data-auto-animate>
+          <p>[ほわあまプリンセス]榊原里美＋</p>
+          <img src="image/06_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/06_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <p>[色とりどりのゆめ]成宮由愛＋</p>
+          <img src="image/06_3.jpg">
+        </section>
+        <section data-auto-animate>
+          <p>[色とりどりのゆめ]成宮由愛＋</p>
+          <img src="image/06_4.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <p>[色とりどりのゆめ]成宮由愛＋</p>
+          <img src="image/06_4.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/06_4.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+      <section><h2>似ているらしい</h2></section>
+
+      <section><h2>他の似ている<br>アイドルは?</h2></section>
+
+      <section>
+        <p>[エレガンス・プラス]十時愛梨＋</p>
+        <img src="image/07_3.jpg">
+      </section>
+
+      <section><h1>VS</h1></section>
+
+      <section>
+        <p>[笑顔のレセプション]高森藍子</p>
+        <img src="image/07_1.jpg">
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <img src="image/07_4.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 0 0">
+          <br>
+          <img src="image/07_2.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <img src="image/07_4.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 0 0">
+          <img src="image/07_4.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 100% 0">
+          <br>
+          <img src="image/07_2.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <img src="image/07_4.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 0 0">
+          <img src="image/07_4.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 100% 0">
+          <br>
+          <img src="image/07_2.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 0 0">
+          <img src="image/07_2.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+      <section><h2>なるほどね</h2></section>
+
+      <section><h2>例の双子、行きますか</h2></section>
+
+      <section>
+        <p>[オンタイム・ハーモニー]久川颯＋</p>
+        <img src="image/08_1.jpg">
+      </section>
+
+      <section>
+        <h1>VS</h1>
+      </section>
+
+      <section>
+        <p>[オフタイム・ナギルーム]久川凪＋</p>
+        <img src="image/08_3.jpg">
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <img src="image/08_2.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 0 0">
+          <br>
+          <img src="image/08_4.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <img src="image/08_2.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 0 0">
+          <img src="image/08_2.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 100% 0">
+          <br>
+          <img src="image/08_4.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <img src="image/08_2.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 0 0">
+          <img src="image/08_2.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 100% 0">
+          <br>
+          <img src="image/08_4.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 0 0">
+          <img src="image/08_4.png" style="height: 300px; width: 300px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <h2>わかったこと</h2>
+        </section>
+        <section data-auto-animate>
+          <h2>わかったこと</h2>
+          <ul>
+            <li class="fragment fade-in">成宮由愛ちゃんと榊原里美ちゃんは似ている</li>
+            <li class="fragment fade-in">高森藍子さんと十時愛梨さんは案の定似ている</li>
+            <li class="fragment fade-in">久川姉妹は意外と見分けがつく</li>
+          </ul>
+        </section>
+      </section>
+
+      <section>
+        <h1>おまけ</h1>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <p>[オフタイム・ナギルーム]久川凪</p>
+          <img src="image/09_1.jpg">
+        </section>
+        <section data-auto-animate>
+          <p>顔が<span class="fragment fade-in" style="color: red;">3</span>個検出されました</p>
+          <img src="image/09_1.jpg">
+        </section>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <img src="image/09_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <img src="image/09_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 0 0">
+          <img src="image/09_2.png" style="height: 400px; width: 400px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+      <section>
+        <h3>残りの2つ</h3>
+      </section>
+
+      <section>
+        <section data-auto-animate>
+          <img src="image/09_3.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <img src="image/09_3.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 0 0">
+          <img src="image/09_3.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 100% 0">
+        </section>
+        <section data-auto-animate>
+          <img src="image/09_3.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 0 0">
+          <img src="image/09_3.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 100% 0">
+          <br>
+          <img src="image/09_4.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 0 0">
+        </section>
+        <section data-auto-animate>
+          <img src="image/09_3.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 0 0">
+          <img src="image/09_3.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 100% 0">
+          <br>
+          <img src="image/09_4.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 0 0">
+          <img src="image/09_4.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 100% 0">
+        </section>
+        <section data-auto-animate>
+          <img src="image/09_3.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 0 0">
+          <img src="image/09_3.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 100% 0">
+          <p style="margin: 0;">ありがとうございました</p>
+          <img src="image/09_4.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 0 0">
+          <img src="image/09_4.png" style="height: 280px; width: 280px; object-fit: cover; object-position: 100% 0">
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="../dist/reveal.js"></script>
+  <script src="../plugin/notes/notes.js"></script>
+  <script src="../plugin/markdown/markdown.js"></script>
+  <script src="../plugin/highlight/highlight.js"></script>
+  <script>
+    Reveal.initialize({
+      controls: true,
+      hash: true,
+      transition: 'slide',
+      slideNumber: 'c/t',
+      plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+
+  </script>
+</body>
+
+</html>
